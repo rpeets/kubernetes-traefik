@@ -2,6 +2,7 @@
 kind: Service
 apiVersion: v1
 metadata:
+  namespace: traefik
   name: traefik-ingress-controller-http-service
   annotations: {}
     # service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
@@ -15,11 +16,12 @@ spec:
   - protocol: TCP
     port: 443
     name: https
-  type: NodePort
+  type: LoadBalancer
 ---
 kind: Service
 apiVersion: v1
 metadata:
+  namespace: traefik
   name: traefik-ingress-controller-dashboard-service
 spec:
   selector:
@@ -27,3 +29,4 @@ spec:
   ports:
   - port: 8080
     name: dashboard
+  type: LoadBalancer
