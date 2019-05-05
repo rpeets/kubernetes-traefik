@@ -1,13 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: whoami-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/frontend-entry-points: http,https
+    # traefik.ingress.kubernetes.io/redirect-entry-point: http
+    # traefik.ingress.kubernetes.io/redirect-permanent: "true"
+spec:
+  rules:
+  - host: red.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: whored
+          servicePort: 80
+  - host: green.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: whogreen
+          servicePort: 80
+  - host: blue.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: whoblue
+          servicePort: 80
+  - host: apache.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: appcheapp
+          servicePort: 80
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: traefik-ingress-controller-dashboard-ingress
+  namespace: traefik
   annotations:
     kubernetes.io/ingress.class: traefik
     traefik.ingress.kubernetes.io/frontend-entry-points: http,https
-    traefik.ingress.kubernetes.io/redirect-entry-point: https
-    traefik.ingress.kubernetes.io/redirect-permanent: "true"
+    #traefik.ingress.kubernetes.io/redirect-entry-point: https
+    #traefik.ingress.kubernetes.io/redirect-permanent: "true"
 spec:
   rules:
   - host: traefik.example.com

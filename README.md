@@ -5,7 +5,7 @@ Traefik has this feature in versions 1.7 and newer
 
 Create TLS certificate that we'll use for UI:
 ```
-openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout ./tls.key -out ./tls.crt -subj "/CN=traefik.example.com"
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout ./tls.key -out ./tls.crt -subj "/CN=*.example.com"
 ```
 
 After certificates are created, put them in secret that is described in `tls_secret.yaml`.
@@ -150,3 +150,72 @@ traefik-ingress-controller-http-service        NodePort    10.108.120.206       
 
 Go to your browser and open (in this case): `https://traefik.example.com:32520`, authenticate with `admin`/`admin`.
 ![Traefik UI](png/traefik_ui.png)
+
+
+## setting up some workload.
+```
+kubectl create deployment whored --image robinpeter/imred
+kubectl scale deployment --replicas 4 whored
+kubectl expose deployment whored --port 80
+kubectl get all
+
+kubectl create deployment whogreen --image robinpeter/imgreen
+kubectl scale deployment --replicas 4 whogreen
+kubectl expose deployment whogreen --port 80
+kubectl get all
+
+kubectl create deployment whoblue --image robinpeter/imblue
+kubectl scale deployment --replicas 4 whoblue
+kubectl expose deployment whoblue --port 80
+kubectl get all
+
+kubectl expose deployment appcheapp --port 80,443
+kubectl create deployment appcheapp --image httpd:alpine
+kubectl scale deployment --replicas 4 appcheapp
+kubectl get all
+```
+
+## Curl Command example
+```
+curl -H Host:red.example.com http://192.168.8.220
+curl -H Host:blue.example.com http://192.168.8.220
+
+curl -c cookie.txt -H Host:red.example.com http://192.168.8.220
+curl -b cookie.txt -H Host:red.example.com http://192.168.8.220
+
+curl -c cookie.txt --insecure -L -H Host:red.example.com https://192.168.8.220
+curl -b cookie.txt --insecure -L -H Host:red.example.com https://192.168.8.220
+```
+
+## For sticky sessions (percistant)
+## Edit a service and add those annotations. Eg:-
+```
+$ kubectl edit services whored
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    traefik.ingress.kubernetes.io/affinity: "true"
+    traefik.ingress.kubernetes.io/session-cookie-name: whored
+  creationTimestamp: "2019-05-05T00:15:38Z"
+  labels:
+    app: whored
+  name: whored
+  namespace: default
+  resourceVersion: "1734671"
+  selfLink: /api/v1/namespaces/default/services/whored
+  uid: e93e881c-6eca-11e9-862c-000c2937d745
+spec:
+  clusterIP: 10.97.246.23
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: whored
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+```
